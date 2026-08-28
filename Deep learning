@@ -433,3 +433,31 @@ plt.xlabel("Iterations")
 plt.ylabel("Cumulative Error")
 plt.title("Training Error Curve")
 plt.show()
+
+
+To create environment:
+Open Anaconda Prompt — not a Jupyter cell.
+    
+Run:
+conda create -n dl_lab python=3.12 -y
+
+Then:
+
+conda activate dl_lab
+
+Now install the required packages:
+
+python -m pip install tensorflow pandas numpy scikit-learn matplotlib jupyter ipykernel
+
+Then connect this environment to Jupyter:
+
+python -m ipykernel install --user --name dl_lab --display-name "Deep Learning Lab"
+Now open Jupyter Notebook
+
+You can launch it normally:
+
+jupyter notebook
+
+Open your notebook and select:
+
+Kernel → Change Kernel → Deep Learning Lab
