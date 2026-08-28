@@ -1,0 +1,434 @@
+4.import numpy as np
+def sigmoid(x):
+    return 1/(1+np.exp(-x))
+X=np.array([[0,0],[0,1],[1,0],[1,1]])
+y=np.array([[0],[1],[1],[0]])
+np.random.seed(0)
+w1=np.random.rand(2,4)
+w2=np.random.rand(4,1)
+for i in range(10000):
+    hidden=sigmoid(np.dot(X,w1))
+    output=sigmoid(np.dot(hidden,w2))
+    error=y-output
+    d_output=error*output*(1-output)
+    d_hidden=np.dot(d_output,w2.T)*hidden*(1-hidden)
+    w2+=np.dot(hidden.T,d_output)*0.1
+    w1+=np.dot(X.T,d_hidden)*0.1
+for inputs in X:
+    hidden=sigmoid(np.dot(inputs,w1))
+    output=sigmoid(np.dot(hidden,w2))
+    results=1 if output[0]>=0.5 else 0
+    print(f"Input:{inputs},Predicted output:{results}")
+
+5.
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+
+red = pd.read_csv("winequality-red.csv", sep=";")
+white = pd.read_csv("winequality-white.csv", sep=";")
+
+red["type"] = 1
+white["type"] = 0
+
+wine = pd.concat([red, white])
+
+X = wine.iloc[:, :11]
+y = wine["type"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42
+)
+
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+model = Sequential([
+    Dense(12, activation="relu", input_shape=(11,)),
+    Dense(8, activation="relu"),
+    Dense(1, activation="sigmoid")
+])
+
+model.compile(
+    optimizer="adam",
+    loss="binary_crossentropy",
+    metrics=["accuracy"]
+)
+model.fit(X_train, y_train, epochs=10, batch_size=32)
+loss, acc = model.evaluate(X_test, y_test)
+print("Accuracy:", acc)
+
+6.
+import tensorflow as tf
+from tensorflow.keras import layers,models
+from tensorflow.keras.datasets import mnist
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+(X_train,y_train),(X_test,y_test)=mnist.load_data()
+X_train=X_train.reshape(-1,28,28,1)/255.0
+X_test=X_test.reshape(-1,28,28,1)/255.0
+model=models.Sequential([
+    layers.Conv2D(32,(3,3),activation="relu",input_shape=(28,28,1)),
+    layers.MaxPooling2D(2,2),
+    layers.Conv2D(64,(3,3),activation="relu"),
+    layers.MaxPooling2D(2,2),
+    layers.Flatten(),
+    layers.Dense(64,activation="relu"),
+    layers.Dense(10,activation="softmax")
+    
+])
+model.compile(
+    optimizer="adam",
+    loss="sparse_categorical_crossentropy",
+    metrics=["accuracy"]
+)
+model.fit(X_train,y_train,epochs=5,batch_size=64)
+loss,accuracy=model.evaluate(X_test,y_test)
+print("Accuracy:",accuracy)
+y_pred=model.predict(X_test).argmax(axis=1)
+cm=confusion_matrix(y_test,y_pred)
+plt.figure(figsize=(8,6))
+plt.imshow(cm)
+plt.title("con_matr")
+plt.xlabel("pred_label")
+plt.ylabel("true_label")
+plt.colorbar()
+for i in range(10):
+    for j in range(10):
+        plt.text(j,i, cm[i,j],ha="center", va="center")
+plt.show()
+
+7.
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.vgg16 import preprocess_input,decode_predictions
+import numpy as np
+model=VGG16(weights="imagenet")
+img=image.load_img("C:/Users/haksh/OneDrive/Documents/cat.jpg",target_size=(224,224))
+X=image.img_to_array(img)
+X=np.expand_dims(X,axis=0)
+X=preprocess_input(X)
+pred=model.predict(X)
+for _,label,score in decode_predictions(pred,top=5)[0]:
+    print(label,score)
+8.
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import SimpleRNN,Dense
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.utils import to_categorical
+from sklearn.metrics import accuracy_score
+(X_train,y_train),(X_test,y_test)=mnist.load_data()
+X_train=X_train/255.0
+X_test=X_test/255.0
+y_train=to_categorical(y_train)
+y_test=to_categorical(y_test)
+model=Sequential([
+    SimpleRNN(128,input_shape=(28,28)),
+    Dense(10,activation="softmax")
+])
+model.compile(optimizer="adam",loss="categorical_crossentropy",metrics=["accuracy"])
+model.fit(X_train,y_train,epochs=5,batch_size=32)
+loss,accuracy=model.evaluate(X_test,y_test)
+print("Accuracy",accuracy)
+9.import numpy as np
+from tensorflow.keras.layers import Embedding,LSTM,Dense,Bidirectional
+from tensorflow.keras.models import Sequential
+X=np.random.randint(0,128,(1000,50))
+y=np.eye(128)[X]
+model=Sequential([
+    Embedding(128,64),
+    Bidirectional(LSTM(64,return_sequences=True)),
+    Dense(128,activation="relu")
+])
+model.compile(optimizer="adam",loss="categorical_crossentropy",metrics=["accuracy"])
+model.fit(X,y,epochs=5,batch_size=32)
+print(accuracy)
+
+1.
+import numpy as np
+def binary_step(x):
+    if x>=0:
+        return 1
+    else:
+        return 0
+def linear(x):
+     return x
+def sigmoid(x):
+     return 1/(1+np.exp(-x))
+def tanh(x):
+     return (np.exp(x)-np.exp(-x))/(np.exp(x)+np.exp(-x))
+def relu(x):
+    if x>0:
+         return x
+    else:
+         return 0
+def leaky_relu(x):
+    if x>0:
+        return x
+    else:
+        return 0.01*x
+def elu(x,alpha=0):
+    if x>0:
+        return x
+    else:
+        return alpha*(np.exp(x)-1)
+def softmax(x):
+    exp_values=np.exp(x-np.max(x))
+    return exp_values/np.sum(exp_values)
+x=-2
+print("Input:",x)
+print("B_Step:",binary_step(x))
+print("Linear:",linear(x))
+print("Sigmoid:",sigmoid(x))
+print("Tanh:",tanh(x))
+print("Relu:",relu(x))
+print("leaky_relu:",leaky_relu(x))
+print("elu:",elu(x))
+values=np.array([1,2,3])
+print("Softmax:",softmax(values))
+
+2.
+# All Optimizers
+
+# Import NumPy
+import numpy as np
+
+# Initial values
+# Initial weight
+w = 5.0
+
+# Learning rate
+lr = 0.1
+
+# Gradient
+gradient = 2.0
+
+
+# 1. GRADIENT DESCENT
+# Formula:
+# w = w - learning_rate * gradient
+
+def gradient_descent(w, gradient, lr):
+    # Update the weight
+    w = w - lr * gradient
+    return w
+
+
+# 2. STOCHASTIC GRADIENT DESCENT (SGD)
+# SGD updates the weight using the gradient
+# calculated from a single training example.
+#
+# Formula:
+# w = w - learning_rate * gradient
+
+def sgd(w, gradient, lr):
+    # Update the weight using one sample's gradient
+    w = w - lr * gradient
+    return w
+
+
+# 3. SGD WITH MOMENTUM
+# Momentum remembers the previous update.
+#
+# Formula:
+# v = beta * v + learning_rate * gradient
+# w = w - v
+
+def sgd_momentum(w, gradient, lr, beta=0.9):
+    # Initial velocity
+    v = 0
+
+    # Calculate new velocity
+    v = beta * v + lr * gradient
+
+    # Update weight
+    w = w - v
+    return w
+
+
+# 4. ADAGRAD
+# AdaGrad adapts the learning rate using
+# the accumulated squared gradients.
+#
+# Formula:
+# G = G + gradient^2
+#
+# w = w - lr * gradient / (sqrt(G) + epsilon)
+
+def adagrad(w, gradient, lr, epsilon=1e-8):
+    # Initialize accumulated squared gradient
+    G = 0
+
+    # Accumulate squared gradient
+    G = G + gradient ** 2
+
+    # Update weight
+    w = w - (lr * gradient) / (np.sqrt(G) + epsilon)
+    return w
+
+
+# 5. RMSPROP
+# RMSProp uses a moving average of squared gradients.
+#
+# Formula:
+# S = beta*S + (1-beta)*gradient^2
+#
+# w = w - lr*gradient / (sqrt(S) + epsilon)
+
+def rmsprop(w, gradient, lr, beta=0.9, epsilon=1e-8):
+    # Initial moving average
+    S = 0
+
+    # Calculate moving average of squared gradient
+    S = beta * S + (1 - beta) * gradient ** 2
+
+    # Update weight
+    w = w - (lr * gradient) / (np.sqrt(S) + epsilon)
+    return w
+
+
+# 6. ADAM
+# Adam combines ideas from Momentum and RMSProp.
+#
+# First moment:
+# m = beta1*m + (1-beta1)*gradient
+#
+# Second moment:
+# v = beta2*v + (1-beta2)*gradient^2
+#
+# Bias correction:
+# m_hat = m / (1-beta1^t)
+# v_hat = v / (1-beta2^t)
+#
+# Weight update:
+# w = w - lr*m_hat/(sqrt(v_hat)+epsilon)
+
+def adam(w, gradient, lr,
+         beta1=0.9, beta2=0.999, epsilon=1e-8):
+
+    # Initialize first moment
+    m = 0
+
+    # Initialize second moment
+    v = 0
+
+    # Time step
+    t = 1
+
+    # Calculate first moment
+    m = beta1 * m + (1 - beta1) * gradient
+
+    # Calculate second moment
+    v = beta2 * v + (1 - beta2) * gradient ** 2
+
+    # Bias correction
+    m_hat = m / (1 - beta1 ** t)
+    v_hat = v / (1 - beta2 ** t)
+
+    # Update weight
+    w = w - lr * m_hat / (np.sqrt(v_hat) + epsilon)
+    return w
+
+
+# MAIN PROGRAM
+
+print("Initial Weight:", w)
+
+print("Gradient Descent:",
+      gradient_descent(w, gradient, lr))
+
+print("SGD:",
+      sgd(w, gradient, lr))
+
+print("SGD with Momentum:",
+      sgd_momentum(w, gradient, lr))
+
+print("AdaGrad:",
+      adagrad(w, gradient, lr))
+
+print("RMSProp:",
+      rmsprop(w, gradient, lr))
+
+print("Adam:",
+      adam(w, gradient, lr))
+
+part A:
+import numpy as np
+import matplotlib.pyplot as plt
+
+class NeuralNetwork:
+    def __init__(self, learning_rate):
+        self.weights = np.random.randn(2)
+        self.bias = np.random.randn()
+        self.learning_rate = learning_rate
+
+    def _sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+
+    def _sigmoid_deriv(self, x):
+        return self._sigmoid(x) * (1 - self._sigmoid(x))
+
+    def predict(self, input_vector):
+        return self._sigmoid(
+            np.dot(input_vector, self.weights) + self.bias
+        )
+
+    def _compute_gradients(self, input_vector, target):
+        layer_1 = np.dot(input_vector, self.weights) + self.bias
+        prediction = self._sigmoid(layer_1)
+        error = 2 * (prediction - target)
+        deriv = self._sigmoid_deriv(layer_1)
+
+        return (
+            error * deriv,
+            error * deriv * input_vector
+        )
+
+    def _update_parameters(self, db, dw):
+        self.bias -= db * self.learning_rate
+        self.weights -= dw * self.learning_rate
+
+    def train(self, input_vectors, targets, iterations):
+        cumulative_errors = []
+
+        for i in range(iterations):
+            index = np.random.randint(len(input_vectors))
+            db, dw = self._compute_gradients(
+                input_vectors[index], targets[index]
+            )
+            self._update_parameters(db, dw)
+
+            if i % 100 == 0:
+                error = sum(
+                    np.square(
+                        self.predict(x) - y
+                    )
+                    for x, y in zip(input_vectors, targets)
+                )
+                cumulative_errors.append(error)
+
+        return cumulative_errors
+
+
+input_vectors = np.array([
+    [3, 1.5], [2, 1], [4, 1.5], [3, 4],
+    [3.5, 0.5], [2, 0.5], [5.5, 1], [1, 1]
+])
+
+targets = np.array([0, 1, 0, 1, 0, 1, 1, 0])
+
+neural_network = NeuralNetwork(0.1)
+
+training_error = neural_network.train(
+    input_vectors, targets, 10000
+)
+
+plt.plot(range(0, 10000, 100), training_error)
+plt.xlabel("Iterations")
+plt.ylabel("Cumulative Error")
+plt.title("Training Error Curve")
+plt.show()
