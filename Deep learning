@@ -134,7 +134,8 @@ model.compile(optimizer="adam",loss="categorical_crossentropy",metrics=["accurac
 model.fit(X_train,y_train,epochs=5,batch_size=32)
 loss,accuracy=model.evaluate(X_test,y_test)
 print("Accuracy",accuracy)
-9.import numpy as np
+9.
+import numpy as np
 from tensorflow.keras.layers import Embedding,LSTM,Dense,Bidirectional
 from tensorflow.keras.models import Sequential
 X=np.random.randint(0,128,(1000,50))
